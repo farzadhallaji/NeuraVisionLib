@@ -1,0 +1,67 @@
+{
+    "dataset": {
+        "name": "mass_roads",
+        "root_dir": "/home/ri/Desktop/Projects/Datasets/Mass_Roads/dataset",
+        "subsets": {
+            "train": "train",
+            "valid": "valid",
+            "test": "test"
+        },
+        "subfolders": {
+            "input": "sat",
+            "target": "map"
+        },
+        "file_types": {
+            "input": "*.tiff",
+            "target": "*.tif"
+        },
+        "data_type": "text"
+    },
+    "preprocessing": {
+        "random_seed": 42,
+        "apply_transformations": false,
+        "image": {
+            "normalize": {
+                "enabled": false,
+                "mean": [
+                    0.485,
+                    0.456,
+                    0.406
+                ],
+                "std": [
+                    0.229,
+                    0.224,
+                    0.225
+                ]
+            },
+            "sliding_window": {
+                "enabled": true,
+                "size": [
+                    256,
+                    256
+                ],
+                "stride": [
+                    64,
+                    64
+                ]
+            }
+        },
+        "custom": {
+            "enabled": true,
+            "path": "dataloaders.mass_roads_dataloader",
+            "function": "remove_white_pixels_map"
+        },
+        "general": {
+            "shuffle": true,
+            "split_ratio": 0.8,
+            "random_seed": 20
+        }
+    },
+    "dataloader": {
+        "batch_size": 32,
+        "num_workers": 4,
+        "pin_memory": true,
+        "shuffle": true,
+        "load_on_demand": true
+    }
+}

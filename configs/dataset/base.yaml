@@ -1,0 +1,140 @@
+dataset:
+  name: "MassRoads"                     
+  path: "/path/to/mass_roads/dataset"   
+                                        
+
+  split:                                
+    train: "train"                      
+    val: "val"                          
+    test: "test"                        
+    use_seed: true                      
+    seed: 42                            
+    shuffle: true
+
+  file_format:                          
+    input: ".tiff"                      
+    target: ".tif"                      
+  
+  custom_read_file:
+    enabled: false
+
+preprocessing:
+  enabled: true                        
+  use_seed: true                       
+  seed: 42                             
+  operations:                          
+    - name: "resize"                   
+      enabled: true                    
+      apply_to: "both"                 
+      parameters:                      
+        width: 512                     
+        height: 512                    
+
+    - name: "normalization"            
+      enabled: true                    
+      apply_to: "input"                
+      parameters:
+        method: "zscore"               
+        range: [0, 1]                  
+        mean: [0.485, 0.456, 0.406]    
+        std: [0.229, 0.224, 0.225]     
+
+    - name: "binarization"             
+      enabled: true                    
+      apply_to: "target"               
+      parameters:
+        threshold: 127                 
+
+    - name: "sliding_window"           
+      enabled: true                    
+      apply_to: "both"                 
+      parameters:
+        window_size: 128               
+        stride: 16                     
+    
+    - name: "custom_preprocess_input"
+      enabled: true
+      apply_to: "input"
+      parameters:
+        param1: "value1"
+        param2: 42
+    
+    - name: "custom_preprocess_target"
+      enabled: true
+      apply_to: "target"
+      parameters:
+        param1: "value1"
+        param2: 42
+
+    - name: "custom_preprocess_both"
+      enabled: true
+      apply_to: "both"
+      parameters:
+        param1: "value1"
+        param2: 42
+        min_road_percentage: 0.05      
+        small_window_size: 8    
+
+augmentation:
+  enabled: true                    
+  use_seed: false                  
+  seed: 42                         
+  operations:                       
+    - name: "random_flip"
+      enabled: true                    
+      apply_to: "both"
+      
+    - name: "random_rotation"
+      enabled: true                    
+      apply_to: "both"    
+      parameters:
+        angle: 15         
+
+    - name: "color_jitter"
+      enabled: true                    
+      apply_to: "input" 
+      parameters:
+        brightness: 0.2          
+        contrast: 0.2            
+        saturation: 0.2          
+        hue: 0.1                 
+
+    - name: "custom_augmentations_input"
+      enabled: true
+      apply_to: "input"
+      parameters:
+        param1: "value1"
+        param2: 42
+    
+    - name: "custom_augmentations_target"
+      enabled: true
+      apply_to: "target"
+      parameters:
+        param1: "value1"
+        param2: 42
+
+    - name: "custom_augmentations_both"
+      enabled: true
+      apply_to: "both"
+      parameters:
+        param1: "value1"
+        param2: 42
+        min_road_percentage: 0.05      
+        small_window_size: 8    
+          
+
+loader:
+  batch_size: 16                       
+  num_workers: 4                      
+  shuffle: true                         
+  prefetch_factor: 2                   
+  drop_last: false                      
+  persistent_workers: true             
+  use_seed: true                        
+  seed: 42                             
+
+logging:
+  enabled: true                         
+  log_path: "/path/to/logs"            
+  verbosity: "info"                     
+
