@@ -320,3 +320,4 @@ cython_debug/
 
 # Path configuration files
 *.pth
+*.crdownload
