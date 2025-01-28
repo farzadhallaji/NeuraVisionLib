@@ -35,3 +35,25 @@ def dynamic_import(module_path, function_name):
         logger.exception(f"Error importing {function_name} from {module_path}: {e}")
         raise
 
+
+def load_custom_function(custom_function_config):
+    """
+    Dynamically import a custom function based on the configuration.
+
+    Args:
+        custom_function_config (dict): Dictionary containing function details.
+
+    Returns:
+        callable: The imported function.
+        dict: The additional arguments for the function.
+    """
+    if not custom_function_config or not custom_function_config.get("name") or not custom_function_config.get("module_path"):
+        raise ValueError("Custom function configuration is incomplete.")
+    
+    # Import the module and function
+    module = importlib.import_module(custom_function_config["module_path"])
+    function = getattr(module, custom_function_config["name"])
+    
+    # Extract additional arguments
+    args = custom_function_config.get("args", {})
+    return function, args

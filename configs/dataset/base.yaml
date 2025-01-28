@@ -3,18 +3,19 @@ dataset:
   path: "/path/to/mass_roads/dataset"   
                                         
   read_data_file:
-    # Supported file formats: [".tiff", ".tif", ".png", ".jpg", ".jpeg", ".h5", ".csv", ".json", ".txt", ".npy", ".npz"].
-    file_format:                          
-      input: ".tiff"                      # File format for input data.
-      target: ".tif"                      # File format for target data.
-      # If your file format is not supported in the list above, set "custom_read_file" to true
-      # and implement a custom_read_file function to handle the unsupported format.
-      custom_read_file: false             # Enable custom file handling for unsupported formats.
-      # If additional parameters (**kwargs) need to be passed to the custom_read_file or read_file function, define them below.
-      args:
-        param1: "val1"                    # Example argument 1 for the custom or read function.
-        param2: "val2"                    # Example argument 2 for the custom or read function.
-        param3: "val3"                    # Example argument 3 for the custom or read function.
+    file_format:                          # Supported file formats for input and target data
+      input: ".tiff"                      # Input file format (e.g., .tiff, .png)
+      target: ".tif"                      # Target file format (e.g., .tif, .jpg)
+    
+    custom:                               # Enable custom file reading logic
+      enabled: false                      # Set to true to enable custom file reading
+      function:
+        name: "custom_read_file"          # Name of the custom file reading function
+        module_path: "custom_modules.file_reader"  # Module path for the custom function
+        args:                             # Additional arguments for the custom function
+          param1: "val1"                  # Example parameter 1
+          param2: "val2"                  # Example parameter 2
+          param3: "val3"                  # Example parameter 3
 
 
   split:                                

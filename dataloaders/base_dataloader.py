@@ -2,7 +2,7 @@ import os
 import torch
 from torch.utils.data import Dataset, DataLoader
 from utils.dataloader.file_reader import read_file
-from utils.general import load_config, set_seed
+from utils.general import load_config, set_seed, load_custom_function
 from sklearn.model_selection import train_test_split
 import torch
 import random
@@ -12,7 +12,6 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
 
 
 
@@ -33,11 +32,12 @@ class BaseDataset(Dataset):
         self.preprocessing = config.get("preprocessing", {})
         self.augmentation = config.get("augmentation", {})
         
-        if self.read_data_file.get("custom_read_file", False):
-            self.read_file = self.custom_read_file
+        self.read_data_file = config.get("read_data_file", {})
+        if self.read_data_file.get("custom", {}).get("enabled", False):
+            self.read_file, self.read_file_args = load_custom_function(self.read_data_file["custom"]["function"])
         else:
             self.read_file = read_file
-        self.read_file_kargs = self.read_data_file.get("args",{})
+            self.read_file_args = {}
 
         self._initialize_split()
         
@@ -313,6 +313,3 @@ class DataLoaderFactory:
                 prefetch_factor=loader_config.get("prefetch_factor", 2),
             )
         return loaders
-
-
-
