@@ -6,8 +6,9 @@ dataset:
   file_format:                           # File format settings
     input: ".tiff"                        # Input file format (can be overridden in read_data_file)
     target: ".tif"                        # Target/label file format
+    delimeter: ','                        # If you need parse arg into read data
   
-  read_data_file:
+  custom_read_data_file:
     enabled: false                        # Enable custom data reading logic
     function:
       name: "custom_read_file"            # Function to read data
@@ -26,10 +27,9 @@ split:
   train: 0.7                              # Train split ratio (if method is ratio)
   val: 0.15                               # Validation split ratio
   test: 0.15                              # Test split ratio
-  shuffle: true
-  use_seed: true
-  seed: 42
+  random_state: 42
   stratify: null                           # Can be set to a class label column for stratified split
+  shuffle: true
   custom_split:
     enabled: false
     function:
@@ -39,8 +39,6 @@ split:
 
 preprocessing:
   enabled: true
-  use_seed: true
-  seed: 42
 
   input_operations:                       # Applied only to input data
     - name: "resize"
