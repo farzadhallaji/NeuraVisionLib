@@ -57,3 +57,37 @@ def load_custom_function(custom_function_config):
     # Extract additional arguments
     args = custom_function_config.get("args", {})
     return function, args
+
+
+def load_module_function_from_config(config):
+    """
+    Dynamically loads a function based on a configuration dictionary.
+
+    :param config: Dictionary containing module_path, function_name, and optional args.
+    :return: Loaded function object with args partially applied if provided.
+    :raises ImportError: If the module or function cannot be loaded.
+    """
+    module_path = config.get("module_path")
+    function_name = config.get("name")
+    args = config.get("args", {})
+
+    if not module_path or not function_name:
+        raise ValueError("'module_path' and 'name' are required in the config.")
+
+    try:
+        module = importlib.import_module(module_path)
+        function = getattr(module, function_name)
+        logger.info(f"Successfully loaded function '{function_name}' from module '{module_path}'")
+
+        # If args are provided, return a partially applied function
+        if args:
+            from functools import partial
+            function = partial(function, **args)
+
+        return function
+    except ImportError as e:
+        logger.error(f"Error importing module '{module_path}': {e}")
+        raise ImportError(f"Module '{module_path}' could not be imported: {e}")
+    except AttributeError as e:
+        logger.error(f"Function '{function_name}' not found in module '{module_path}': {e}")
+        raise AttributeError(f"Function '{function_name}' not found in module '{module_path}': {e}")

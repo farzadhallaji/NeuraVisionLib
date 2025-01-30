@@ -1,0 +1,159 @@
+dataset:
+  name: "GenericDataset"
+  type: "2d"                          # Supports ["2d", "3d", "4d", "text", "tabular", "pointcloud", "custom"]
+  paths: ["path/to/dataset1", "path/to/dataset2"]  # Supports multiple dataset directories
+
+  file_format:                           # File format settings
+    input: ".tiff"                        # Input file format (can be overridden in read_data_file)
+    target: ".tif"                        # Target/label file format
+  
+  read_data_file:
+    enabled: false                        # Enable custom data reading logic
+    function:
+      name: "custom_read_file"            # Function to read data
+      module_path: "custom_modules.file_reader"
+      args:
+        param1: "val1"
+
+metadata:
+  enabled: false
+  file_path: "/path/to/metadata.csv"
+  key_column: "id"      # Column matching file names
+  target_column: "label"
+
+split:
+  method: "ratio"                         # Options: ["folder", "ratio", "custom"]
+  train: 0.7                              # Train split ratio (if method is ratio)
+  val: 0.15                               # Validation split ratio
+  test: 0.15                              # Test split ratio
+  shuffle: true
+  use_seed: true
+  seed: 42
+  stratify: null                           # Can be set to a class label column for stratified split
+  custom_split:
+    enabled: false
+    function:
+      name: "custom_train_test_split"
+      module_path: "custom_modules.splitter"
+      args: {}
+
+preprocessing:
+  enabled: true
+  use_seed: true
+  seed: 42
+
+  input_operations:                       # Applied only to input data
+    - name: "resize"
+      enabled: true
+      width: 512
+      height: 512
+
+    - name: "normalize"
+      enabled: true
+      mean: [0.485, 0.456, 0.406]         # Standard ImageNet mean values
+      std: [0.229, 0.224, 0.225]
+
+    - name: "custom_preprocess_input"
+      enabled: false
+      custom:
+        module_path: "custom_modules.preprocessing"
+        function_name: "custom_function"
+        args: {}
+
+  target_operations:                      # Applied only to target/labels
+    - name: "binarization"
+      enabled: false
+      threshold: 127
+
+    - name: "custom_preprocess_target"
+      enabled: false
+      custom:
+        module_path: "custom_modules.preprocessing"
+        function_name: "custom_function"
+        args: {}
+
+  both_operations:                        # Applied to both input and target
+    - name: "sliding_window"
+      enabled: false
+      window_size: 128
+      stride: 16
+
+    - name: "custom_preprocess_both"
+      enabled: false
+      custom:
+        module_path: "custom_modules.preprocessing"
+        function_name: "custom_function"
+        args: {}
+
+augmentation:
+  enabled: true
+
+  input_operations:
+    - name: "color_jitter"
+      enabled: true
+      brightness: 0.2
+      contrast: 0.2
+      saturation: 0.2
+      hue: 0.1
+
+    - name: "custom_augmentations_input"
+      enabled: false
+      custom:
+        module_path: "custom_modules.augmentation"
+        function_name: "custom_function"
+        args: {}
+
+  target_operations:
+    - name: "custom_augmentations_target"
+      enabled: false
+      custom:
+        module_path: "custom_modules.augmentation"
+        function_name: "custom_function"
+        args: {}
+
+  both_operations:
+    - name: "random_flip"
+      enabled: true
+
+    - name: "random_rotation"
+      enabled: true
+      angle: 15
+
+    - name: "custom_augmentations_both"
+      enabled: false
+      custom:
+        module_path: "custom_modules.augmentation"
+        function_name: "custom_function"
+        args: {}
+
+functions_to_load_first:
+  - function: 
+      function_name: "fun_name"
+      module_path: "custom.modules"
+      args: {}
+
+loader:
+  batch_size: 16                        # Number of samples per batch
+  num_workers: 4                        # Number of workers for data loading
+  shuffle: true                         # Shuffle data during loading
+  prefetch_factor: 2                    # Number of batches to prefetch (useful for speeding up data loading)
+  drop_last: false                      # Drop the last incomplete batch if the dataset size is not divisible by batch_size
+  persistent_workers: true              # Keep workers alive between iterations
+  use_seed: true                        # Enable deterministic behavior
+  seed: 42                              # Seed value for reproducibility (used if use_seed is true)
+  pin_memory: true
+  
+  # you can use and set any arg same as torch.utils.data.DataLoader
+  # torch.utils.data.DataLoader
+            # (, batch_size=1, shuffle=False, sampler=None,
+            #  batch_sampler=None, num_workers=0, collate_fn=None,
+            #  pin_memory=False, drop_last=False, timeout=0,
+            #  worker_init_fn=None, *, prefetch_factor=2,
+            #  persistent_workers=False)
+
+dataloader_test:
+  path: 'user_tests/dataloader/configurable_dataloader'
+  shapes: true
+  plot: true
+
+
