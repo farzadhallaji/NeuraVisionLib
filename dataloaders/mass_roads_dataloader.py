@@ -3,6 +3,7 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
 import rasterio
+from torch.utils.data.sampler import WeightedRandomSampler
 
 
 class MassRoadsDataset(Dataset):
@@ -125,9 +126,9 @@ def custom_collate_fn(batch):
     batch = [b for b in batch if b is not None]  # Remove skipped patches
 
     if len(batch) == 0:
-        return None, None, None  # Handle empty batches
+        return None, None, None  # Skip empty batches in DataLoader
 
-    # Avoid huge memory spike by stacking only needed data
+    # Avoid memory spike by stacking only needed data
     sat_patches = torch.stack([item["sat_patch"] for item in batch], dim=0).contiguous()
     map_patches = torch.stack([item["map_patch"] for item in batch], dim=0).contiguous()
     metadata = [item["metadata"] for item in batch]
@@ -135,3 +136,17 @@ def custom_collate_fn(batch):
     return sat_patches, map_patches, metadata
 
 
+def get_patch_sampler(dataset):
+    """Creates a sampler to balance samples based on patch count per image."""
+    patch_counts = np.zeros(len(dataset.sat_files))  # One per image
+
+    # Count patches per image
+    for patch in dataset.patches_metadata:
+        patch_counts[patch["image_idx"]] += 1
+
+    # Normalize to create sampling probabilities
+    weights = 1.0 / (patch_counts + 1e-6)
+    weights /= weights.sum()  # Normalize
+
+    sampler = WeightedRandomSampler(weights, num_samples=len(dataset), replacement=True)
+    return sampler

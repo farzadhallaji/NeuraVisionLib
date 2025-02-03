@@ -324,3 +324,5 @@ cython_debug/
 
 
 ignore/
+
+*ignore*.ipynb
