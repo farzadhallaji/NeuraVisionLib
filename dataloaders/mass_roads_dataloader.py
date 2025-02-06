@@ -74,7 +74,6 @@ class MassRoadsDataset(Dataset):
         sat_filename = self.sat_files[image_idx] 
         map_filename = self.map_files[image_idx]
 
-
         sat_path = os.path.join(self.sat_dir, sat_filename)
         map_path = os.path.join(self.map_dir, map_filename)
 
@@ -97,9 +96,13 @@ class MassRoadsDataset(Dataset):
         # Step 2: Calculate the percentage of road pixels
         road_percentage = np.sum(map_patch) / (self.window_size ** 2)
 
-        # Step 3: If the patch does not contain enough roads, skip it
+        # Step 3: If the patch does not contain enough roads, return a dummy patch
         if road_percentage < self.road_threshold:
-            return None  # Skip this patch
+            return {
+                "sat_patch": torch.zeros((3, self.window_size, self.window_size), dtype=torch.float32),
+                "map_patch": torch.zeros((self.window_size, self.window_size), dtype=torch.long),
+                "metadata": {"dummy": True}  # Mark as dummy
+            }
 
         # Return patches + metadata
         return {
@@ -123,10 +126,11 @@ class MassRoadsDataset(Dataset):
 
 
 def custom_collate_fn(batch):
-    batch = [b for b in batch if b is not None]  # Remove skipped patches
+    """Collate function that removes dummy patches before stacking."""
+    batch = [b for b in batch if not b["metadata"].get("dummy", False)]  # Remove dummy patches
 
     if len(batch) == 0:
-        return None, None, None  # Skip empty batches in DataLoader
+        return None, None, None  # Skip empty batches
 
     # Avoid memory spike by stacking only needed data
     sat_patches = torch.stack([item["sat_patch"] for item in batch], dim=0).contiguous()
@@ -134,6 +138,7 @@ def custom_collate_fn(batch):
     metadata = [item["metadata"] for item in batch]
 
     return sat_patches, map_patches, metadata
+
 
 
 def get_patch_sampler(dataset):
